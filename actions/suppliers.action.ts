@@ -38,3 +38,38 @@ export async function createSupplier(req: NextRequest) {
     );
   }
 }
+
+export async function getSuppliers() {
+  try {
+    const suppliers = await prisma.supplier.findMany();
+    return NextResponse.json(suppliers, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching suppliers:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch suppliers" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function deleteSupplier(req: NextRequest) {
+  try {
+    const { id } = await req.json();
+    const deletedSupplier = await prisma.supplier.delete({
+      where: { id },
+    });
+    return NextResponse.json(
+      {
+        message: "Supplier deleted successfully.",
+        supplier: deletedSupplier,
+      },
+      { status: 200 },
+    );
+  } catch (error) {
+    console.error("Error deleting supplier:", error);
+    return NextResponse.json(
+      { error: "Failed to delete supplier" },
+      { status: 500 },
+    );
+  }
+}

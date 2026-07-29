@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Plus, MoreHorizontal, Edit, Trash } from "lucide-react"
 
@@ -18,9 +19,12 @@ export default function CategoriesPage() {
           <h1 className="text-3xl font-bold tracking-tight">Categories</h1>
           <p className="text-muted-foreground">Manage product categories.</p>
         </div>
-        <button className="bg-sidebar text-sidebar-foreground hover:bg-sidebar/90 px-4 py-2 rounded-full inline-flex items-center gap-2 font-medium transition-all shadow-sm">
+        <Link
+          href="/categories/new"
+          className="bg-sidebar text-sidebar-foreground hover:bg-sidebar/90 px-4 py-2 rounded-full inline-flex items-center gap-2 font-medium transition-all shadow-sm"
+        >
           <Plus className="h-4 w-4" /> Add Category
-        </button>
+        </Link>
       </div>
 
       <Table>

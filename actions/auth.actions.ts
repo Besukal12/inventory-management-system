@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { loginSchema, registerSchema } from "@/lib/validators/auth.schema";
-import { createAccessToken, createRefreshToken, verifyRefreshToken } from "@/lib/token";
+import {
+  createAccessToken,
+  createRefreshToken,
+  verifyRefreshToken,
+} from "@/lib/token";
 import { hashPassword, comparePasswords } from "@/lib/hash";
 import prisma from "@/lib/db";
 import jwt from "jsonwebtoken";
@@ -68,11 +72,9 @@ export async function register(req: NextRequest) {
       { status: 201 },
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Internal server error";
-    return NextResponse.json(
-      { message },
-      { status: 500 },
-    );
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
+    return NextResponse.json({ message }, { status: 500 });
   }
 }
 
@@ -138,12 +140,10 @@ export async function login(req: NextRequest) {
       { status: 200 },
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Internal server error";
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
 
-    return NextResponse.json(
-      { message },
-      { status: 500 },
-    );
+    return NextResponse.json({ message }, { status: 500 });
   }
 }
 
@@ -160,10 +160,7 @@ export async function logout(req: NextRequest) {
       maxAge: 0,
     });
 
-    return NextResponse.json(
-      { message: "Logout successful" },
-      { status: 200 },
-    );
+    return NextResponse.json({ message: "Logout successful" }, { status: 200 });
   } catch (error) {
     return NextResponse.json(
       { message: "Internal server error" },
@@ -190,13 +187,13 @@ export async function refreshToken(req: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { message: "User not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    const newAccessToken = createAccessToken(user.id, user.role as "Admin" | "Manager" | "Employee");
+    const newAccessToken = createAccessToken(
+      user.id,
+      user.role as "Admin" | "Manager" | "Employee",
+    );
 
     return NextResponse.json(
       {
@@ -209,6 +206,63 @@ export async function refreshToken(req: NextRequest) {
     return NextResponse.json(
       { message: "Invalid or expired refresh token" },
       { status: 401 },
+    );
+  }
+}
+
+export async function getUsers(req: NextRequest) {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+    return NextResponse.json({ users }, { status: 200 });
+  } catch (error) {
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function deleteUser(req: NextRequest) {
+  try {
+    const { id } = await req.json();
+    await prisma.user.delete({
+      where: { id },
+    });
+    return NextResponse.json(
+      { message: "User deleted successfully" },
+      { status: 200 },
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function updateUser(req: NextRequest) {
+  try {
+    const { id, name, email, role } = await req.json();
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: { name, email, role },
+    });
+    return NextResponse.json(
+      { message: "User updated successfully", user: updatedUser },
+      { status: 200 },
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 },
     );
   }
 }

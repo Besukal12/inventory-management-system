@@ -28,15 +28,17 @@ export default function NewProductPage() {
                   type="text" 
                   className="w-full px-4 py-3 rounded-full border focus:ring-2 focus:ring-accent outline-none"
                   placeholder="e.g. Wireless Mouse"
+                  name="name"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold">Category</label>
-                <select className="w-full px-4 py-3 rounded-full border focus:ring-2 focus:ring-accent outline-none appearance-none bg-white">
-                  <option>Electronics</option>
-                  <option>Furniture</option>
-                  <option>Office Supplies</option>
-                </select>
+                <label className="text-sm font-semibold">SKU</label>
+                <input 
+                  type="text" 
+                  className="w-full px-4 py-3 rounded-full border focus:ring-2 focus:ring-accent outline-none"
+                  placeholder="e.g. WM-001"
+                  name="sku"
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-semibold">Price ($)</label>
@@ -45,6 +47,7 @@ export default function NewProductPage() {
                   step="0.01"
                   className="w-full px-4 py-3 rounded-full border focus:ring-2 focus:ring-accent outline-none"
                   placeholder="0.00"
+                  name="price"
                 />
               </div>
               <div className="space-y-2">
@@ -53,14 +56,36 @@ export default function NewProductPage() {
                   type="number" 
                   className="w-full px-4 py-3 rounded-full border focus:ring-2 focus:ring-accent outline-none"
                   placeholder="0"
+                  name="quantity"
                 />
               </div>
-              <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-semibold">Description</label>
-                <textarea 
-                  className="w-full px-4 py-3 rounded-2xl border focus:ring-2 focus:ring-accent outline-none min-h-[100px]"
-                  placeholder="Product description..."
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">Low Stock Alert</label>
+                <input 
+                  type="number" 
+                  className="w-full px-4 py-3 rounded-full border focus:ring-2 focus:ring-accent outline-none"
+                  placeholder="5"
+                  name="lowStockAt"
                 />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">Category</label>
+                <select className="w-full px-4 py-3 rounded-full border focus:ring-2 focus:ring-accent outline-none appearance-none bg-white" name="categoryId">
+                  <option value="">Select category</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">Supplier</label>
+                <select className="w-full px-4 py-3 rounded-full border focus:ring-2 focus:ring-accent outline-none appearance-none bg-white" name="supplierId">
+                  <option value="">Select supplier</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">Active</label>
+                <select className="w-full px-4 py-3 rounded-full border focus:ring-2 focus:ring-accent outline-none appearance-none bg-white" name="isActive">
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </select>
               </div>
             </div>
 

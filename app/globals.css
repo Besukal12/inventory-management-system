@@ -118,7 +118,7 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: #B39DFF; /* Soft purple */
-  --radius: 1.5rem; /* Generous border radius */
+  --radius: 0.6rem; /* Much tighter global radius */
   --sidebar: #1C1C1E; /* Dark charcoal sidebar */
   --sidebar-foreground: oklch(0.985 0 0); /* White text in sidebar */
   --sidebar-primary: #CCFF00; /* Neon green active */

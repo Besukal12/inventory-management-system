@@ -12,13 +12,79 @@ datasource db {
   provider = "postgresql"
 }
 
+enum TransactionType {
+  STOCK_IN
+  STOCK_OUT
+}
+
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      String   @default("Employee")
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String                 @id @default(cuid())
+  name            String
+  email           String                 @unique
+  password        String
+  role            String                 @default("Employee")
+  isActive        Boolean                @default(true)
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  products        Product[]
+  transactions    InventoryTransaction[] @relation("RecordedBy")
+  productsCreated Product[]              @relation("CreatedBy")
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  products  Product[]
+}
+
+model Supplier {
+  id            String    @id @default(cuid())
+  name          String
+  contactPerson String
+  phone         String
+  email         String
+  address       String
+  createdAt     DateTime  @default(now())
+  products      Product[]
+}
+
+model Product {
+  id           String                 @id @default(cuid())
+  name         String
+  sku          String                 @unique
+  price        Decimal                @db.Decimal(10, 2)
+  quantity     Int                    @default(0) 
+  lowStockAt   Int                    @default(5) 
+  categoryId   String
+  category     Category               @relation(fields: [categoryId], references: [id])
+  supplierId   String
+  supplier     Supplier               @relation(fields: [supplierId], references: [id])
+  createdById  String
+  createdBy    User                   @relation("CreatedBy", fields: [createdById], references: [id])
+  isActive     Boolean                @default(true)
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+  transactions InventoryTransaction[]
+  user         User?                  @relation(fields: [userId], references: [id])
+  userId       String?
+}
+
+model InventoryTransaction {
+  id           String          @id @default(cuid())
+  productId    String
+  product      Product         @relation(fields: [productId], references: [id])
+  type         TransactionType
+  quantity     Int // always positive; direction comes from `type`
+  note         String?
+  recordedById String
+  recordedBy   User            @relation("RecordedBy", fields: [recordedById], references: [id])
+  createdAt    DateTime        @default(now())
+}
+
+model Settings {
+  id           String @id @default("singleton")
+  businessName String
+  currency     String @default("USD")
+  theme        String @default("light")
 }

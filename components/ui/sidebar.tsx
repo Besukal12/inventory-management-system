@@ -13,6 +13,7 @@ import {
   ArrowRightLeft,
   Truck
 } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 const sidebarNavItems = [
   {
@@ -56,6 +57,23 @@ const sidebarNavItems = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    try {
+      const res = await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to log out.");
+      }
+
+      router.push("/login");
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   return (
     <aside className="hidden w-64 flex-col bg-sidebar text-sidebar-foreground md:flex p-6 rounded-3xl m-4 h-[calc(100vh-2rem)] shrink-0 shadow-lg">
@@ -106,7 +124,10 @@ export function Sidebar() {
       </div>
 
       <div className="mt-6 pt-6 border-t border-sidebar-border">
-        <button className="flex w-full items-center rounded-full px-4 py-3 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent/10 hover:text-sidebar-foreground">
+        <button
+          onClick={handleLogout}
+          className="flex w-full items-center rounded-full px-4 py-3 text-sm font-medium text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent/10 hover:text-sidebar-foreground"
+        >
           <LogOut className="mr-3 h-5 w-5 text-sidebar-foreground/60" />
           Logout
         </button>

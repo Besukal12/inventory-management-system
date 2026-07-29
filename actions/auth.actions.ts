@@ -150,7 +150,16 @@ export async function login(req: NextRequest) {
 export async function logout(req: NextRequest) {
   try {
     const cookieStore = await cookies();
-    cookieStore.delete("refreshToken");
+    const isProduction = process.env.NODE_ENV === "production";
+
+    cookieStore.set("refreshToken", "", {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 0,
+    });
+
     return NextResponse.json(
       { message: "Logout successful" },
       { status: 200 },

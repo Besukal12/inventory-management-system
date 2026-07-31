@@ -34,8 +34,25 @@ export async function createCategory(req: NextRequest) {
     );
   } catch (error) {
     console.error("Error creating category:", error);
+
+    if (
+      error instanceof Error &&
+      "code" in error &&
+      error.code === "P2002"
+    ) {
+      return NextResponse.json(
+        {
+          message: "A category with this name already exists.",
+          error: "Duplicate category name",
+        },
+        { status: 409 },
+      );
+    }
+
+    const message =
+      error instanceof Error ? error.message : "Failed to create category";
     return NextResponse.json(
-      { error: "Failed to create category" },
+      { message, error: "Failed to create category" },
       { status: 500 },
     );
   }

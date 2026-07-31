@@ -4,14 +4,29 @@ import Link from "next/link"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Plus, MoreHorizontal } from "lucide-react"
-
-const mockSuppliers = [
-  { id: 1, name: "TechTronix Inc", email: "contact@techtronix.com", phone: "+1 (555) 123-4567", status: "Active" },
-  { id: 2, name: "Global Furniture Ltd", email: "sales@gfl.com", phone: "+44 20 7123 4567", status: "Active" },
-  { id: 3, name: "OfficeMax Wholesale", email: "orders@officemax.net", phone: "+1 (555) 987-6543", status: "Inactive" },
-]
-
+import { useState, useEffect } from "react"
 export default function SuppliersPage() {
+  const [suppliers, setSuppliers] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
+  
+    useEffect(() => {
+      const loadSuppliers = async () => {
+        try {
+          const response = await fetch("/api/supplier/get_supplier")
+          if (!response.ok) {
+            throw new Error("Failed to fetch suppliers")
+          }
+          const data = await response.json()
+          setSuppliers(data)
+        } catch (error) {
+          console.error("Failed to fetch suppliers", error)
+        } finally {
+          setLoading(false)
+        }
+      }
+  
+      loadSuppliers()
+    }, [])
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -38,7 +53,7 @@ export default function SuppliersPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {mockSuppliers.map((supplier) => (
+          {suppliers.map((supplier) => (
             <TableRow key={supplier.id}>
               <TableCell className="font-medium">{supplier.name}</TableCell>
               <TableCell>{supplier.email}</TableCell>

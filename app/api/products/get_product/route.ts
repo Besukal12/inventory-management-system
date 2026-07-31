@@ -1,6 +1,6 @@
-import {NextRequest} from "next/server";
-import { createCategory } from "@/actions/categories.action";
+import { NextRequest } from "next/server";
+import { getProducts } from "@/actions/products.action";
 
-export async function POST(req: NextRequest) {
-  return createCategory(req);
+export async function GET(req: NextRequest) {
+  return getProducts();
 }

@@ -29,11 +29,17 @@ export async function createSupplier(req: NextRequest) {
       },
     });
 
-    return NextResponse.json(newSupplier, { status: 201 });
+    return NextResponse.json(
+      {
+        message: "Supplier created successfully.",
+        supplier: newSupplier,
+      },
+      { status: 201 },
+    );
   } catch (error) {
     console.error("Error creating supplier:", error);
     return NextResponse.json(
-      { error: "Failed to create supplier" },
+      { message: "Failed to create supplier" },
       { status: 500 },
     );
   }

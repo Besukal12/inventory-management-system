@@ -63,8 +63,9 @@ export async function createProduct(req: NextRequest) {
     );
   } catch (error) {
     console.error("Error creating product:", error);
+    const message = error instanceof Error ? error.message : "Failed to create product";
     return NextResponse.json(
-      { error: "Failed to create product" },
+      { message, error: "Failed to create product" },
       { status: 500 },
     );
   }

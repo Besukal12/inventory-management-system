@@ -250,11 +250,28 @@ export async function deleteUser(req: NextRequest) {
 
 export async function updateUser(req: NextRequest) {
   try {
-    const { id, name, email, role } = await req.json();
+    const { id, name, email, role, password } = await req.json();
+
+    const dataToUpdate: {
+      name?: string;
+      email?: string;
+      role?: string;
+      password?: string;
+    } = {
+      name,
+      email,
+      role,
+    };
+
+    if (password && password.trim() !== "") {
+      dataToUpdate.password = await hashPassword(password.trim());
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id },
-      data: { name, email, role },
+      data: dataToUpdate,
     });
+
     return NextResponse.json(
       { message: "User updated successfully", user: updatedUser },
       { status: 200 },

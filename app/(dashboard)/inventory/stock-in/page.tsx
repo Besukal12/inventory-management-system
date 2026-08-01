@@ -1,8 +1,79 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, Save } from "lucide-react"
 import Link from "next/link"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import toast from "react-hot-toast"
 
 export default function StockInPage() {
+  const router = useRouter()
+  const [products, setProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  const [fetching, setFetching] = useState(true)
+  
+  const [formData, setFormData] = useState({
+    productId: "",
+    quantity: "",
+    note: ""
+  })
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const response = await fetch("/api/products/get_product")
+        if (response.ok) {
+          const data = await response.json()
+          setProducts(data)
+          if (data.length > 0) {
+            setFormData(prev => ({ ...prev, productId: data[0].id }))
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load products", error)
+      } finally {
+        setFetching(false)
+      }
+    }
+    loadProducts()
+  }, [])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!formData.productId || !formData.quantity) {
+      toast.error("Please fill in all required fields")
+      return
+    }
+
+    setLoading(true)
+    try {
+      const response = await fetch("/api/inventory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: formData.productId,
+          type: "STOCK_IN",
+          quantity: parseInt(formData.quantity),
+          note: formData.note || undefined
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to record stock in")
+      }
+
+      toast.success("Stock in recorded successfully!")
+      router.push("/inventory")
+    } catch (error: any) {
+      toast.error(error.message)
+      console.error(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <div className="flex items-center gap-4">
@@ -20,33 +91,34 @@ export default function StockInPage() {
           <CardTitle>Transaction Details</CardTitle>
         </CardHeader>
         <CardContent>
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-semibold">Select Product</label>
-                <select className="w-full px-4 py-3 rounded-full border focus:ring-2 focus:ring-accent outline-none appearance-none bg-white">
-                  <option>Premium Laptop Pro</option>
-                  <option>Wireless Headphones</option>
-                  <option>Ergonomic Office Chair</option>
-                </select>
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-semibold">Supplier (Optional)</label>
-                <select className="w-full px-4 py-3 rounded-full border focus:ring-2 focus:ring-accent outline-none appearance-none bg-white">
-                  <option>Select a supplier...</option>
-                  <option>TechTronix Inc</option>
-                  <option>Global Furniture Ltd</option>
+                <label className="text-sm font-semibold">Select Product *</label>
+                <select 
+                  className="w-full px-4 py-3 rounded-full border focus:ring-2 focus:ring-accent outline-none appearance-none bg-white"
+                  value={formData.productId}
+                  onChange={(e) => setFormData({...formData, productId: e.target.value})}
+                  disabled={fetching}
+                  required
+                >
+                  {fetching ? <option>Loading products...</option> : null}
+                  {products.map(p => (
+                    <option key={p.id} value={p.id}>{p.name} (Current stock: {p.quantity})</option>
+                  ))}
                 </select>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold">Quantity Received</label>
+                <label className="text-sm font-semibold">Quantity Received *</label>
                 <input 
                   type="number" 
                   min="1"
                   className="w-full px-4 py-3 rounded-full border focus:ring-2 focus:ring-accent outline-none"
                   placeholder="0"
+                  value={formData.quantity}
+                  onChange={(e) => setFormData({...formData, quantity: e.target.value})}
+                  required
                 />
               </div>
               
@@ -55,6 +127,8 @@ export default function StockInPage() {
                 <textarea 
                   className="w-full px-4 py-3 rounded-2xl border focus:ring-2 focus:ring-accent outline-none min-h-[100px]"
                   placeholder="Optional notes regarding this shipment..."
+                  value={formData.note}
+                  onChange={(e) => setFormData({...formData, note: e.target.value})}
                 />
               </div>
             </div>
@@ -67,10 +141,11 @@ export default function StockInPage() {
                 Cancel
               </Link>
               <button 
-                type="button"
-                className="bg-sidebar text-sidebar-foreground hover:bg-sidebar/90 px-6 py-3 rounded-full inline-flex items-center gap-2 font-medium transition-all shadow-sm"
+                type="submit"
+                disabled={loading || fetching}
+                className="bg-sidebar text-sidebar-foreground hover:bg-sidebar/90 px-6 py-3 rounded-full inline-flex items-center gap-2 font-medium transition-all shadow-sm disabled:opacity-50"
               >
-                <Save className="h-4 w-4" /> Save Record
+                <Save className="h-4 w-4" /> {loading ? "Saving..." : "Save Record"}
               </button>
             </div>
           </form>

@@ -1,18 +1,33 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { ArrowDownLeft, ArrowUpRight, Plus, Search } from "lucide-react"
+import { ArrowDownLeft, ArrowUpRight, Search } from "lucide-react"
 import Link from "next/link"
 
-const mockTransactions = [
-  { id: "TX-1001", type: "Stock In", product: "Premium Laptop Pro", quantity: 50, date: "12 July, 2024", user: "Admin" },
-  { id: "TX-1002", type: "Stock Out", product: "Wireless Headphones", quantity: 5, date: "12 July, 2024", user: "Employee 1" },
-  { id: "TX-1003", type: "Stock In", product: "Ergonomic Office Chair", quantity: 20, date: "11 July, 2024", user: "Manager" },
-  { id: "TX-1004", type: "Stock Out", product: "4K Monitor 32-inch", quantity: 2, date: "10 July, 2024", user: "Employee 2" },
-]
-
 export default function InventoryPage() {
+  const [transactions, setTransactions] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const loadTransactions = async () => {
+      try {
+        const response = await fetch("/api/inventory")
+        if (!response.ok) {
+          throw new Error("Failed to fetch transactions")
+        }
+        const data = await response.json()
+        setTransactions(data)
+      } catch (error) {
+        console.error("Failed to fetch transactions", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadTransactions()
+  }, [])
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -41,36 +56,49 @@ export default function InventoryPage() {
         </div>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Transaction ID</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Product</TableHead>
-            <TableHead>Quantity</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Recorded By</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {mockTransactions.map((tx) => (
-            <TableRow key={tx.id}>
-              <TableCell className="font-medium">{tx.id}</TableCell>
-              <TableCell>
-                <Badge variant={tx.type === "Stock In" ? "neon" : "secondary"}>
-                  {tx.type}
-                </Badge>
-              </TableCell>
-              <TableCell>{tx.product}</TableCell>
-              <TableCell className="font-semibold">
-                {tx.type === "Stock In" ? "+" : "-"}{tx.quantity}
-              </TableCell>
-              <TableCell className="text-muted-foreground">{tx.date}</TableCell>
-              <TableCell>{tx.user}</TableCell>
+      {loading ? (
+        <div className="text-sm text-muted-foreground">Loading transactions...</div>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Transaction ID</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Product</TableHead>
+              <TableHead>Quantity</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Recorded By</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {transactions.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                  No transactions found.
+                </TableCell>
+              </TableRow>
+            )}
+            {transactions.map((tx) => (
+              <TableRow key={tx.id}>
+                <TableCell className="font-medium text-xs">{tx.id}</TableCell>
+                <TableCell>
+                  <Badge variant={tx.type === "STOCK_IN" ? "neon" : "secondary"}>
+                    {tx.type === "STOCK_IN" ? "Stock In" : "Stock Out"}
+                  </Badge>
+                </TableCell>
+                <TableCell>{tx.product?.name ?? "Unknown Product"}</TableCell>
+                <TableCell className="font-semibold">
+                  {tx.type === "STOCK_IN" ? "+" : "-"}{tx.quantity}
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {new Date(tx.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </TableCell>
+                <TableCell>{tx.recordedBy?.name ?? "Unknown User"}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
     </div>
   )
 }

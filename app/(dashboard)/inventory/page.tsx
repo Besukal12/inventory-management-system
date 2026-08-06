@@ -3,30 +3,65 @@
 import { useEffect, useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { ArrowDownLeft, ArrowUpRight, Search } from "lucide-react"
+import { ArrowDownLeft, ArrowUpRight, Search, Trash2 } from "lucide-react"
 import Link from "next/link"
+import toast from "react-hot-toast"
 
 export default function InventoryPage() {
   const [transactions, setTransactions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  const loadTransactions = async () => {
+    try {
+      const response = await fetch("/api/inventory/get_inventory", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+      if (!response.ok) {
+        throw new Error("Failed to fetch transactions")
+      }
+      const data = await response.json()
+      setTransactions(data)
+    } catch (error) {
+      console.error("Failed to fetch transactions", error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const loadTransactions = async () => {
-      try {
-        const response = await fetch("/api/inventory")
-        if (!response.ok) {
-          throw new Error("Failed to fetch transactions")
-        }
-        const data = await response.json()
-        setTransactions(data)
-      } catch (error) {
-        console.error("Failed to fetch transactions", error)
-      } finally {
-        setLoading(false)
-      }
-    }
     loadTransactions()
   }, [])
+
+  const handleDeleteTransaction = async (transactionId: string) => {
+    try {
+      setDeletingId(transactionId)
+      const response = await fetch("/api/inventory", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ transactionId }),
+      })
+
+      const responseData = await response.json().catch(() => ({}))
+
+      if (!response.ok) {
+        throw new Error(responseData.error || responseData.message || "Failed to delete transaction")
+      }
+
+      setTransactions((prev) => prev.filter((tx) => tx.id !== transactionId))
+      toast.success("Transaction deleted successfully")
+    } catch (error: any) {
+      console.error("Failed to delete transaction", error)
+      toast.error(error.message || "Failed to delete transaction")
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -68,12 +103,13 @@ export default function InventoryPage() {
               <TableHead>Quantity</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Recorded By</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {transactions.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                   No transactions found.
                 </TableCell>
               </TableRow>
@@ -94,6 +130,17 @@ export default function InventoryPage() {
                   {new Date(tx.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </TableCell>
                 <TableCell>{tx.recordedBy?.name ?? "Unknown User"}</TableCell>
+                <TableCell className="text-right">
+                  <button
+                    type="button"
+                    className="inline-flex items-center justify-center rounded-full h-8 w-8 hover:bg-destructive/10 text-destructive transition-colors disabled:opacity-50"
+                    onClick={() => handleDeleteTransaction(tx.id)}
+                    disabled={deletingId === tx.id}
+                    aria-label="Delete transaction"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -42,8 +42,11 @@ export default function StockOutPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.productId || !formData.quantity) {
-      toast.error("Please fill in all required fields")
+
+    const quantity = Number.parseInt(formData.quantity, 10)
+
+    if (!formData.productId || !formData.quantity || Number.isNaN(quantity) || quantity < 1) {
+      toast.error("Please enter a valid positive quantity")
       return
     }
 
@@ -55,7 +58,7 @@ export default function StockOutPage() {
         body: JSON.stringify({
           productId: formData.productId,
           type: "STOCK_OUT",
-          quantity: parseInt(formData.quantity),
+          quantity,
           note: `[${formData.reason}] ${formData.note}`.trim()
         })
       })
@@ -115,6 +118,7 @@ export default function StockOutPage() {
                 <input 
                   type="number" 
                   min="1"
+                  step="1"
                   className="w-full px-4 py-3 rounded-full border focus:ring-2 focus:ring-accent outline-none"
                   placeholder="0"
                   value={formData.quantity}

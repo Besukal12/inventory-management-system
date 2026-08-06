@@ -112,17 +112,6 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Upgrade to Pro Promo Card matching the design */}
-      <div className="mt-8 rounded-2xl bg-accent p-5 text-accent-foreground shadow-[0_8px_30px_rgb(204,255,0,0.3)]">
-        <h4 className="font-bold mb-1">Upgrade to Pro</h4>
-        <p className="text-xs opacity-80 mb-4">
-          Upgrade your account for a fuller experience.
-        </p>
-        <button className="w-full rounded-full bg-sidebar py-2.5 text-xs font-semibold text-sidebar-foreground transition-transform hover:scale-105">
-          Upgrade Now
-        </button>
-      </div>
-
       <div className="mt-6 pt-6 border-t border-sidebar-border">
         <button
           onClick={handleLogout}
